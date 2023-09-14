@@ -2,47 +2,101 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <float.h>
 
-double uniforme(){
-    double u = rand() / ((double)RAND_MAX + 1.0);
-    // limitando entre 0 e 1
-    u = 1.0 - u;
+double uniforme() {
+	double u = rand() / ((double) RAND_MAX + 1);
+	//limitando entre (0,1]
+	u = 1.0 - u;
 
-    return (u);
+	return (u);
 }
 
-int main(int argc, char const *argv[])
-{
-    // Na exponencial, E[x] = 1/l
+double min(double d1, double d2){
+    return (d1 < d2) ? d1 :  d2;
+}
+
+int main(){
+    // iniciando a semente p/ a geracao dos numeros
+    //pseudo-aleatorios
+    int semente = time(NULL);
+    // int semente = 10;
+    srand(semente);
+
+    //Na Exponencial, E[X] = 1/l
     // E[X] = 5
     // 1/l = 5
     // l = 1/5
     // l = 0.2
-    double l;
-    double soma;
-    printf("Informe o tempo medio em segundos: ");
-    scanf("%lF", &l);
-    l = 1.0/l;
+    double media_chegada;
+    printf("Informe o tempo medio de chegada entre clientes (s): ");
+    scanf("%lF", &media_chegada);
+    media_chegada = 1.0/media_chegada;
 
-    // variaveis para calculo da media final
-    double some = 0.0;
-    double qtd_valores_gerados = 1000000000.0;
+    double media_servico;
+    printf("Informe o tempo medio de serviço (s): ");
+    scanf("%lF", &media_servico);
+    media_servico = 1.0/media_servico;
 
-    // iniciando a semente para geração de numeros pseudoaleatorios
-    int semente = time(NULL);
-    // semente = 10;
-    srand(semente);
+    double tempo_simulacao;
+    printf("Informe o tempo a ser simulado (s): ");
+    scanf("%lF", &tempo_simulacao);
+    tempo_simulacao = 1.0/tempo_simulacao;
 
-    int i;
-    for (i = 0; i < qtd_valores_gerados; i++)
+    double tempo_decorrido = 0.0;
+
+    double tempo_chegada = (-1.0/ media_chegada) * log(uniforme());
+    double tempo_saida = DBL_MAX;
+    // printf("%lF\n", tempo_saida);
+
+    unsigned long int fila = 0;
+
+    while (tempo_decorrido < tempo_simulacao)
     {
-        double valor = (-1.0/l) * log(uniforme());
-        //printf("%lF\n", valor);
-        //getchar();
-        soma += valor;
+        tempo_decorrido = min(tempo_chegada, tempo_saida);
+        // printf("tempo chegada: %lF\n", tempo_chegada);
+        // printf("tempo saida: %lF\n", tempo_saida);
+        // printf("tempo decorrido: %lF\n", tempo_decorrido);
+        // printf("boolean: %d\n", tempo_decorrido == tempo_chegada);
+        // getchar();
+        // getchar();
+https://github.com/gabriel-francelino/AnaliseDesempenho.git
+        if (tempo_decorrido == tempo_chegada)
+        {
+            // chegada
+            if (fila)
+            {
+                fila++;
+            }
+            else
+            {
+                tempo_saida = tempo_decorrido + (-1.0/ media_servico) * log(uniforme());
+            }      
 
+            tempo_chegada = tempo_decorrido + (-1.0/ media_chegada) * log(uniforme());      
+            
+        }
+        else if (tempo_decorrido == tempo_saida)
+        {
+            // saida
+            if (fila)
+            {
+                fila--;
+                tempo_saida = tempo_decorrido + (-1.0/ media_servico) * log(uniforme());
+            }
+            else
+            {
+                tempo_saida = DBL_MAX;
+            } 
+        }
+        else
+        {
+            printf("Evento inválido!\n");
+            return(1);
+        }    
     }
-    printf("Media: %lF\n", (soma/qtd_valores_gerados));
+    
 
-    return 0;
+    // double valor = (-1.0/ l) * log(uniforme());
+
 }
