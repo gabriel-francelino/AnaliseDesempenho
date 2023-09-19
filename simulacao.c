@@ -55,7 +55,7 @@ int main(){
 
     while(tempo_decorrido < params.tempo_simulacao){
         tempo_decorrido = min(tempo_chegada, tempo_saida);
-        printf("%lF\n", tempo_decorrido);
+        printf("Tempo decorrido: %lF\n", tempo_decorrido);
 
         if(tempo_decorrido == tempo_chegada){
             //chegada
@@ -75,8 +75,8 @@ int main(){
             (-1.0/params.media_chegada) * log(uniforme());
         } else if(tempo_decorrido == tempo_saida){
             //saida
+            fila--;
             if(fila){
-                fila--;
                 double tempo_servico =
                     (-1.0/params.media_servico)
                     * log(uniforme());
@@ -93,7 +93,7 @@ int main(){
             return(1);
         }
     }
-    printf("ocupacao: %lF\n",
+    printf("Ocupacao: %lF\n",
         soma_ocupacao/tempo_decorrido);
 
     return 0;
