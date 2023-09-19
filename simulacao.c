@@ -44,12 +44,12 @@ int main(){
     tempo_simulacao = 1.0/tempo_simulacao;
 
     double tempo_decorrido = 0.0;
-
     double tempo_chegada = (-1.0/ media_chegada) * log(uniforme());
     double tempo_saida = DBL_MAX;
+    unsigned long int fila = 0;
     // printf("%lF\n", tempo_saida);
 
-    unsigned long int fila = 0;
+    double soma_ocupacao = 0.0;
 
     while (tempo_decorrido < tempo_simulacao)
     {
@@ -60,18 +60,16 @@ int main(){
         // printf("boolean: %d\n", tempo_decorrido == tempo_chegada);
         // getchar();
         // getchar();
-        
+
         if (tempo_decorrido == tempo_chegada)
         {
             // chegada
-            if (fila)
-            {
-                fila++;
-            }
-            else
+            // a cabeça da fila é quem está em atendimento
+            if (!fila)
             {
                 tempo_saida = tempo_decorrido + (-1.0/ media_servico) * log(uniforme());
-            }      
+            }
+            fila++;     
 
             tempo_chegada = tempo_decorrido + (-1.0/ media_chegada) * log(uniforme());      
             

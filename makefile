@@ -1,9 +1,9 @@
 all:
-	gcc exponencial.c -lm  -o exponencial
+	gcc simulacao.c -lm  -o simulacao
 
 run:
-	gcc exponencial.c -lm  -o exponencial
-	./exponencial
+	gcc simulacao.c -lm  -o simulacao
+	./simulacao
 
 clean:
-	rm exponencial
+	rm simulacao
