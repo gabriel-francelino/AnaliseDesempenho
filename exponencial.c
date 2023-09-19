@@ -60,7 +60,7 @@ int main(){
         // printf("boolean: %d\n", tempo_decorrido == tempo_chegada);
         // getchar();
         // getchar();
-https://github.com/gabriel-francelino/AnaliseDesempenho.git
+        
         if (tempo_decorrido == tempo_chegada)
         {
             // chegada
