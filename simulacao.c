@@ -10,6 +10,18 @@ typedef struct {
     double tempo_simulacao;
 } parametros;
 
+typedef struct {
+    unsigned long int no_eventos;
+    double tempo_anterior;
+    double soma_areas;
+} little;
+
+void inicia_little(little * l){
+    l->no_eventos = 0;
+    l->tempo_anterior = 0.0;
+    l->soma_areas = 0.0;
+}
+
 void le_parametros(parametros * params){
     printf("Informe o tempo medio entre clientes (s): ");
     scanf("%lF", &params->media_chegada);
@@ -49,13 +61,26 @@ int main(){
     double tempo_chegada = (-1.0/params.media_chegada) * log(uniforme());
     double tempo_saida = DBL_MAX;
     unsigned long int fila = 0;
+    unsigned long int max_fila = 0;
 
     //variaveis de medidas de interesse
     double soma_ocupacao = 0.0;
+    /**
+     * Little
+    */
+    little e_n;
+    little e_w_chegada;
+    little e_w_saida;
+    inicia_little(&e_n);
+    inicia_little(&e_w_chegada);
+    inicia_little(&e_w_saida);
+    /**
+     * Little -- fim
+    */
 
     while(tempo_decorrido < params.tempo_simulacao){
         tempo_decorrido = min(tempo_chegada, tempo_saida);
-        printf("Tempo decorrido: %lF\n", tempo_decorrido);
+        //printf("%lF\n", tempo_decorrido);
 
         if(tempo_decorrido == tempo_chegada){
             //chegada
@@ -71,8 +96,25 @@ int main(){
                 soma_ocupacao += tempo_servico;
             }
             fila++;
+            max_fila = fila > max_fila?
+                fila:max_fila;
+            
             tempo_chegada = tempo_decorrido + 
             (-1.0/params.media_chegada) * log(uniforme());
+
+            //calculo little -- E[N]
+            e_n.soma_areas += 
+                (tempo_decorrido - e_n.tempo_anterior)
+                * e_n.no_eventos;
+            e_n.no_eventos++;
+            e_n.tempo_anterior = tempo_decorrido;
+            
+            //calculo little -- E[W] - chegada
+            e_w_chegada.soma_areas +=
+                (tempo_decorrido - e_w_chegada.tempo_anterior)
+                * e_w_chegada.no_eventos;
+            e_w_chegada.no_eventos++;
+            e_w_chegada.tempo_anterior = tempo_decorrido;
         } else if(tempo_decorrido == tempo_saida){
             //saida
             fila--;
@@ -88,13 +130,49 @@ int main(){
             }else{
                 tempo_saida = DBL_MAX;
             }
+
+            //calculo little -- E[N]
+            e_n.soma_areas += 
+                (tempo_decorrido - e_n.tempo_anterior)
+                * e_n.no_eventos;
+            e_n.no_eventos--;
+            e_n.tempo_anterior = tempo_decorrido;
+
+            //calculo little -- E[W] - saida
+            e_w_saida.soma_areas +=
+                (tempo_decorrido - e_w_saida.tempo_anterior)
+                * e_w_saida.no_eventos;
+            e_w_saida.no_eventos++;
+            e_w_saida.tempo_anterior = tempo_decorrido;
         } else{
             printf("Evento invalido!\n");
             return(1);
         }
     }
-    printf("Ocupacao: %lF\n",
-        soma_ocupacao/tempo_decorrido);
+    e_w_chegada.soma_areas +=
+        (tempo_decorrido - e_w_chegada.tempo_anterior)
+        * e_w_chegada.no_eventos;
+
+    e_w_saida.soma_areas +=
+        (tempo_decorrido - e_w_saida.tempo_anterior)
+        * e_w_saida.no_eventos;
+
+    printf("ocupacao: %lF\n",
+        (soma_ocupacao/tempo_decorrido));
+
+    printf("tamanho maximo da fila: %ld\n",
+        max_fila);
+
+    double e_n_calculo = e_n.soma_areas / tempo_decorrido;
+    double e_w_calculo = (e_w_chegada.soma_areas
+        - e_w_saida.soma_areas)
+        / e_w_chegada.no_eventos;
+    double lambda = e_w_chegada.no_eventos / tempo_decorrido;
+
+    printf("E[N]: %lF\n", e_n_calculo);    
+    printf("E[W]: %lF\n", e_w_calculo);
+    printf("Erro de Little: %.20lF\n",
+        e_n_calculo - lambda * e_w_calculo);
 
     return 0;
 }
